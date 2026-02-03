@@ -174,9 +174,8 @@
         // Set the target date - October 1, 2026 at midnight
         const targetDate = new Date('2026-10-01T00:00:00').getTime();
         
-        // Get the start date (now, when the page was created)
-        // You can modify this to a specific start date if needed
-        const startDate = new Date().getTime();
+        // Set the start date - February 3, 2026 (when we started long-distance)
+        const startDate = new Date('2026-02-03T00:00:00').getTime();
 
         function updateCountdown() {
             const now = new Date().getTime();
