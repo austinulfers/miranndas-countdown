@@ -322,6 +322,116 @@
                 opacity: 0.7;
             }
         }
+
+        .stats-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stats-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.95em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badges-section {
+            margin: 30px 0;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        .badge.unlocked {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #ffd700;
+            opacity: 1;
+            filter: grayscale(0%);
+            animation: badge-unlock 0.5s ease-out;
+        }
+
+        @keyframes badge-unlock {
+            0% {
+                transform: scale(0.5) rotate(-5deg);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1) rotate(5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .badge-icon {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .badge-name {
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .badge-description {
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
     </style>
 </head>
 
@@ -391,8 +501,31 @@
             </div>
         </div>
 
+        <div class="stats-section">
+            <div class="stats-title">📊 Our Journey Stats</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="visitsCompleted">0</span>
+                    <span class="stat-label">Visits Complete</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="daysTogether">0</span>
+                    <span class="stat-label">Days Together</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="milesTraveled">0</span>
+                    <span class="stat-label">Miles Traveled</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="badges-section">
+            <div class="stats-title">🏆 Milestones</div>
+            <div class="badges-grid" id="badgesGrid"></div>
+        </div>
+
         <div class="message">
-            Until we're together again! 🌟
+            Until we're together again! Love you, Mirannda! 💕
         </div>
 
         <div class="date-info">
@@ -406,6 +539,23 @@
 
         // Set the start date - February 5, 2026 (when we started long-distance)
         const startDate = new Date('2026-02-05T00:00:00').getTime();
+
+        // Distance between Seattle and San Francisco (one way in miles)
+        const DISTANCE_SEA_TO_SF = 680;
+
+        // Define milestone badges
+        const badges = [
+            { id: 'first-visit', name: 'First Visit', icon: '💝', description: '1st visit complete', checkUnlocked: (stats) => stats.visitsCompleted >= 1 },
+            { id: 'five-visits', name: 'Frequent Flyer', icon: '✈️', description: '5 visits complete', checkUnlocked: (stats) => stats.visitsCompleted >= 5 },
+            { id: 'ten-visits', name: 'Dedicated Traveler', icon: '🌟', description: '10 visits complete', checkUnlocked: (stats) => stats.visitsCompleted >= 10 },
+            { id: 'halfway-time', name: 'Halfway There', icon: '🎯', description: '50% of time passed', checkUnlocked: (stats) => stats.progressPercentage >= 50 },
+            { id: 'three-quarters', name: 'Almost There', icon: '🎊', description: '75% of time passed', checkUnlocked: (stats) => stats.progressPercentage >= 75 },
+            { id: 'hundred-days', name: '100 Days to Go', icon: '💯', description: 'Under 100 days left', checkUnlocked: (stats) => stats.daysRemaining <= 100 && stats.daysRemaining > 0 },
+            { id: 'thirty-days', name: 'Final Countdown', icon: '🚀', description: 'Under 30 days left', checkUnlocked: (stats) => stats.daysRemaining <= 30 && stats.daysRemaining > 0 },
+            { id: 'thousand-miles', name: 'Road Warrior', icon: '🛣️', description: '1,000 miles traveled', checkUnlocked: (stats) => stats.milesTraveled >= 1000 },
+            { id: 'five-thousand-miles', name: 'Globe Trotter', icon: '🌍', description: '5,000 miles traveled', checkUnlocked: (stats) => stats.milesTraveled >= 5000 },
+            { id: 'month-together', name: 'Quality Time', icon: '💑', description: '30+ days together', checkUnlocked: (stats) => stats.daysTogether >= 30 }
+        ];
 
         // Define all visit periods
         const visits = [
@@ -442,6 +592,95 @@
         function formatDate(date) {
             const options = { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
             return date.toLocaleDateString('en-US', options);
+        }
+
+        function calculateStats() {
+            const now = new Date().getTime();
+            let visitsCompleted = 0;
+            let daysTogether = 0;
+            let milesTraveled = 0;
+
+            visits.forEach(visit => {
+                const visitEnd = visit.end.getTime();
+
+                if (now > visitEnd) {
+                    // Visit is complete
+                    visitsCompleted++;
+                    const visitDuration = (visitEnd - visit.start.getTime()) / (1000 * 60 * 60 * 24);
+                    daysTogether += visitDuration;
+
+                    // Calculate miles - check if it's a Seattle or SF visit based on description
+                    if (visit.description.includes('Seattle')) {
+                        milesTraveled += DISTANCE_SEA_TO_SF * 2; // Round trip for Austin
+                    } else {
+                        milesTraveled += DISTANCE_SEA_TO_SF * 2; // Round trip for Mirannda
+                    }
+                } else if (now >= visit.start.getTime() && now <= visitEnd) {
+                    // Currently in a visit
+                    const timeSoFar = (now - visit.start.getTime()) / (1000 * 60 * 60 * 24);
+                    daysTogether += timeSoFar;
+
+                    // Count miles for ongoing visit
+                    if (visit.description.includes('Seattle')) {
+                        milesTraveled += DISTANCE_SEA_TO_SF; // One way so far
+                    } else {
+                        milesTraveled += DISTANCE_SEA_TO_SF; // One way so far
+                    }
+                }
+            });
+
+            const distance = targetDate - now;
+            const daysRemaining = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const totalTime = targetDate - startDate;
+            const timePassed = now - startDate;
+            const progressPercentage = Math.min(100, Math.max(0, (timePassed / totalTime) * 100));
+
+            return {
+                visitsCompleted,
+                daysTogether: Math.floor(daysTogether),
+                milesTraveled: Math.floor(milesTraveled),
+                daysRemaining,
+                progressPercentage
+            };
+        }
+
+        function updateStats() {
+            const stats = calculateStats();
+
+            document.getElementById('visitsCompleted').textContent = stats.visitsCompleted;
+            document.getElementById('daysTogether').textContent = stats.daysTogether;
+            document.getElementById('milesTraveled').textContent = stats.milesTraveled.toLocaleString();
+
+            return stats;
+        }
+
+        function initializeBadges() {
+            const badgesGrid = document.getElementById('badgesGrid');
+
+            badges.forEach(badge => {
+                const badgeElement = document.createElement('div');
+                badgeElement.className = 'badge';
+                badgeElement.id = `badge-${badge.id}`;
+                badgeElement.innerHTML = `
+                    <div class="badge-icon">${badge.icon}</div>
+                    <div class="badge-name">${badge.name}</div>
+                    <div class="badge-description">${badge.description}</div>
+                `;
+                badgesGrid.appendChild(badgeElement);
+            });
+        }
+
+        function updateBadges() {
+            const stats = calculateStats();
+
+            badges.forEach(badge => {
+                const badgeElement = document.getElementById(`badge-${badge.id}`);
+                if (badge.checkUnlocked(stats)) {
+                    if (!badgeElement.classList.contains('unlocked')) {
+                        badgeElement.classList.add('unlocked');
+                    }
+                }
+            });
         }
 
         function updateVisitCountdown() {
@@ -618,10 +857,17 @@
 
         // Update countdown immediately and then every second
         createVisitMarkers();
+        initializeBadges();
         updateCountdown();
         updateVisitCountdown();
+        updateStats();
+        updateBadges();
         const countdownInterval = setInterval(updateCountdown, 1000);
         const visitCountdownInterval = setInterval(updateVisitCountdown, 1000);
+        const statsInterval = setInterval(() => {
+            updateStats();
+            updateBadges();
+        }, 1000);
     </script>
 </body>
 
